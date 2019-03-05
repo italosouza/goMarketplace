@@ -1,6 +1,8 @@
 const Ad = require('../models/Ad')
+// const Purchase = require('../models/Purchase')
 const User = require('../models/User')
-const Mail = require('../services/Mailer')
+const PurchaseMail = require('../jobs/PurchaseMail')
+const Queue = require('../services/Queue')
 
 class PurchaseController {
   async store(req, res) {
@@ -9,22 +11,19 @@ class PurchaseController {
     const purchaseAd = await Ad.findById(ad).populate('author')
     const user = await User.findById(req.userId)
 
-    // await Mail.sendMail({
-    //   from: '"Vendas" <vendas@mkplace.com.br',
-    //   to: purchaseAd.author.email,
-    //   subject: `Solicitação de compra: ${purchaseAd.title}`,
-    //   template: 'purchase',
-    //   context: { user, content, ad: purchaseAd }
+    // const purchase = await Purchase.create({
+    //   content,
+    //   ad,
+    //   user: user._id
     // })
 
-    await Mail.sendMail({
-      from: '"Diego Fernandes" <diego@rocketseat.com.br>',
-      to: purchaseAd.author.email,
-      subject: `Solicitação de compra: ${purchaseAd.title}`,
-      template: 'purchase',
-      context: { user, content, ad: purchaseAd }
-    })
+    Queue.create(PurchaseMail.key, {
+      ad: purchaseAd,
+      user,
+      content
+    }).save()
 
+    // return res.json(purchase)
     return res.send()
   }
 }

@@ -24,7 +24,7 @@ class AdController {
       page: req.query.page || 1,
       limit: 20,
       populate: ['author'],
-      sor: '-createdAt'
+      sort: '-createdAt'
     })
 
     return res.json(ads)
